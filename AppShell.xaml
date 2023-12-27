@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="QuestTracker.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:QuestTracker"
+    xmlns:views="clr-namespace:QuestTracker.Views">
+
+    <TabBar>
+        <Tab Title="Shoreline">
+            <ShellContent ContentTemplate="{DataTemplate views:ShorelinePage}" Shell.NavBarIsVisible="False" />
+        </Tab>
+        <Tab Title="Customs">
+            <ShellContent ContentTemplate="{DataTemplate views:CustomsPage}" Shell.NavBarIsVisible="False" />
+        </Tab>
+        <Tab Title="Woods">
+            <ShellContent ContentTemplate="{DataTemplate views:WoodsPage}" Shell.NavBarIsVisible="False" />
+        </Tab>
+        <Tab Title="Lighthouse">
+            <ShellContent ContentTemplate="{DataTemplate views:LighthousePage}" Shell.NavBarIsVisible="False" />
+        </Tab>
+        <Tab Title="Streets">
+            <ShellContent ContentTemplate="{DataTemplate views:StreetsPage}" Shell.NavBarIsVisible="False" />
+        </Tab>
+    </TabBar>
+</Shell>
