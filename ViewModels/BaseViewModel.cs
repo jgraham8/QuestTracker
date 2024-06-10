@@ -7,9 +7,10 @@ public abstract partial class BaseViewModel : ObservableObject
         RedrawMap();
     }
 
+    public string MapName { get; set; } = "map_customs.png";
+
     [ObservableProperty]
     private IDrawable map = new MapDrawable();
-
     [ObservableProperty]
     private bool showGrids = true;
     [ObservableProperty]
@@ -21,11 +22,11 @@ public abstract partial class BaseViewModel : ObservableObject
     [ObservableProperty]
     private bool showSpawns = true;
     [ObservableProperty]
-    private protected List<Quest> allQuests = new();
+    private protected List<Quest> allQuests = [];
 
 #nullable enable
     [ObservableProperty]
-    private List<Quest>? selectedQuests = new();
+    private List<Quest>? selectedQuests = [];
 
     [ObservableProperty]
     private SpawnLocation? selectedSpawn = new();
@@ -49,5 +50,9 @@ public abstract partial class BaseViewModel : ObservableObject
         RedrawMap();
     }
 
-    public abstract void RedrawMap();
+    [RelayCommand]
+    public void RedrawMap()
+    {
+        Map = new MapDrawable(MapName, AllExtracts, AllSpawns, SelectedQuests, SelectedSpawn, ShowGrids, ShowQuests, ShowExtracts, ShowGuides, ShowSpawns);
+    }
 }

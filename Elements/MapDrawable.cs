@@ -193,7 +193,7 @@ public class MapDrawable : IDrawable
 
         var current = SelectedSpawn as BaseLocationModel;
 
-        List<QuestLocation> locations = new();
+        List<QuestLocation> locations = [];
 
         foreach (var quest in SelectedQuests)
         {
