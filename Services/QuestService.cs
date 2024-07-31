@@ -371,15 +371,7 @@ public class QuestService
                 {
                     new(559, 307, 0),
                 }
-            },
-            new()
-            {
-                Name = "Delivery From the Past",
-                Locations = new List<QuestLocation>()
-                {
-                    bigred,
-                }
-            },
+            },        
             new()
             {
                 Name = "BP Depot",

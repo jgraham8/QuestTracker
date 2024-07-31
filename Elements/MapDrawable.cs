@@ -179,53 +179,6 @@ public class MapDrawable : IDrawable
         }
     }
 
-    private void DrawGuides(ICanvas canvas)
-    {
-        if (SelectedSpawn == null || SelectedSpawn.X == -1 || SelectedQuests == null || SelectedQuests.Count == 0 || Extracts == null || Extracts.Count == 0)
-        {
-            return;
-        }
-
-        SetCanvasStyle(canvas, CustomColours.GUIDE_COLOUR, true);
-        canvas.StrokeSize = 3f;
-
-        List<ExtractLocation> _extracts = GetAvailableExtracts();
-
-        var current = SelectedSpawn as BaseLocationModel;
-
-        List<QuestLocation> locations = new();
-
-        foreach (var quest in SelectedQuests)
-        {
-            locations.AddRange(quest.Locations);
-        }
-
-        var remaining = locations.Cast<BaseLocationModel>().ToList();
-
-        while (remaining != null && remaining.Count != 0)
-        {
-            var closest = GetClosestPoint(current, remaining);
-
-            canvas.DrawLine(current.X, current.Y, closest.X, closest.Y);
-
-            current = closest;
-            if (remaining.Count > 1)
-            {
-                remaining.Remove(closest);
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        var lastQuest = remaining.First();
-
-        var closestExtract = GetClosestPoint(lastQuest, _extracts.Cast<BaseLocationModel>().ToList());
-
-        canvas.DrawLine(lastQuest.X, lastQuest.Y, closestExtract.X, closestExtract.Y);
-    }
-
     private static void SetCanvasStyle(ICanvas canvas, Color customColour, bool hasShadow)
     {
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
@@ -281,8 +234,119 @@ public class MapDrawable : IDrawable
                 _ => Extracts.Where(e => e.Name is "Crane" or "Damaged House" or "Courtyard" or "Crash Site").ToList(),
 
             },
-            _ => new List<ExtractLocation>()
+            _ => []
         };
+    }
+
+    private void DrawGuides(ICanvas canvas)
+    {
+        if (SelectedSpawn == null || SelectedSpawn.X == -1 || SelectedQuests == null || SelectedQuests.Count == 0 || Extracts == null || Extracts.Count == 0)
+        {
+            return;
+        }
+
+        SetCanvasStyle(canvas, CustomColours.GUIDE_COLOUR, true);
+        canvas.StrokeSize = 3f;
+
+        List<ExtractLocation> _extracts = GetAvailableExtracts();
+
+        var start = SelectedSpawn as BaseLocationModel;
+        List<QuestLocation> questLocations = [];
+
+        foreach (var quest in SelectedQuests)
+        {
+            questLocations.AddRange(quest.Locations);
+        }
+
+        var end = _extracts.First() as BaseLocationModel;
+        List<BaseLocationModel> locations = questLocations.Cast<BaseLocationModel>().ToList();
+
+        // Initial greedy path
+        List<BaseLocationModel> initialPath = FindInitialPath(start, locations);
+
+        // Optimize the path using 2-opt
+        List<BaseLocationModel> optimalPath = TwoOptOptimization(initialPath, start, end);
+
+        // Draw the path
+        var current = start;
+        foreach (var location in optimalPath)
+        {
+            canvas.DrawLine(current.X, current.Y, location.X, location.Y);
+            current = location;
+        }
+
+        // Draw line to the end
+        canvas.DrawLine(current.X, current.Y, end.X, end.Y);
+    }
+
+    private static List<BaseLocationModel> FindInitialPath(BaseLocationModel start, List<BaseLocationModel> locations)
+    {
+        List<BaseLocationModel> path = [];
+        BaseLocationModel current = start;
+
+        while (locations.Count > 0)
+        {
+            var closest = GetClosestPoint(current, locations);
+            path.Add(closest);
+            locations.Remove(closest);
+            current = closest;
+        }
+
+        return path;
+    }
+
+    private static List<BaseLocationModel> TwoOptOptimization(List<BaseLocationModel> path, BaseLocationModel start, BaseLocationModel end)
+    {
+        bool improvement = true;
+        while (improvement)
+        {
+            improvement = false;
+            for (int i = 1; i < path.Count - 1; i++)
+            {
+                for (int j = i + 1; j < path.Count; j++)
+                {
+                    if (TwoOptSwap(path, i, j, start, end))
+                    {
+                        improvement = true;
+                    }
+                }
+            }
+        }
+        return path;
+    }
+
+    private static bool TwoOptSwap(List<BaseLocationModel> path, int i, int j, BaseLocationModel start, BaseLocationModel end)
+    {
+        // Calculate the current distance
+        float currentDistance = GetDistance(start, path[0]);
+        for (int k = 0; k < path.Count - 1; k++)
+        {
+            currentDistance += GetDistance(path[k], path[k + 1]);
+        }
+        currentDistance += GetDistance(path[path.Count - 1], end);
+
+        // Swap the nodes
+        List<BaseLocationModel> newPath = new(path);
+        newPath.Reverse(i, j - i + 1);
+
+        // Calculate the new distance
+        float newDistance = GetDistance(start, newPath[0]);
+        for (int k = 0; k < newPath.Count - 1; k++)
+        {
+            newDistance += GetDistance(newPath[k], newPath[k + 1]);
+        }
+        newDistance += GetDistance(newPath[newPath.Count - 1], end);
+
+        // If the new distance is shorter, update the path
+        if (newDistance < currentDistance)
+        {
+            for (int k = i; k <= j; k++)
+            {
+                path[k] = newPath[k];
+            }
+            return true;
+        }
+        return false;
     }
 
     private static BaseLocationModel GetClosestPoint(BaseLocationModel current, List<BaseLocationModel> remaining)

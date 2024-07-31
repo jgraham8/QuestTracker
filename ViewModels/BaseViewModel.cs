@@ -21,12 +21,11 @@ public abstract partial class BaseViewModel : ObservableObject
     [ObservableProperty]
     private bool showSpawns = true;
     [ObservableProperty]
-    private protected List<Quest> allQuests = new();
+    private protected List<Quest> allQuests = [];
 
 #nullable enable
     [ObservableProperty]
-    private List<Quest>? selectedQuests = new();
-
+    private List<Quest>? selectedQuests = [];
     [ObservableProperty]
     private SpawnLocation? selectedSpawn = new();
 #nullable disable
